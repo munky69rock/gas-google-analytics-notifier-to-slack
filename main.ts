@@ -11,8 +11,9 @@ declare class Analytics {
 }
 
 const SLACK_URL = scriptProperty.getProperty("SLACK_URL");
+const SLACK_CHANNEL = scriptProperty.getProperty("SLACK_CHANNEL")
 const slackMessage: ISlackMessage = {
-    channel: '#atengagement',
+    channel: SLACK_CHANNEL,
     username: 'google-analytics',
     icon_emoji: ':chart_with_upwards_trend:'
 };
