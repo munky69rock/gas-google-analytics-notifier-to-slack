@@ -37,23 +37,22 @@ function sendAnalyticsData() {
     const startDate = Utilities.formatDate(new Date(today.getFullYear(), today.getMonth(),today.getDate() -1), timezone, 'yyyy-MM-dd');
     const endDate = Utilities.formatDate(today, timezone, 'yyyy-MM-dd');
 
-    const reports = Analytics.Data.Ga.get(`ga:${GA_PROFILE_ID}`, startDate, endDate, GA_METRIC, GA_OPTIONS).rows;
+    Logger.log(startDate, endDate);
+
+    const channelReports = Analytics.Data.Ga.get(`ga:${GA_PROFILE_ID}`, startDate, endDate, GA_METRIC, GA_OPTIONS).rows;
     const attachments: IAttachment[] = [];
-    let session = 0;
-    let uu = 0;
-    let pv = 0;
-    reports.forEach(report => {
+    channelReports.forEach(report => {
         attachments.push({
             title: report[0],
             text: `セッション:${report[1]}, UU:${report[2]}, PV: ${report[3]}`
         });
-        session += parseInt(report[1], 0);
-        uu += parseInt(report[2], 0);
-        pv += parseInt(report[3], 0);
     });
-    attachments.push({
-      title: "全体",
-      text: `セッション:${session}, UU:${uu}, PV: ${pv}`
+    const reports = Analytics.Data.Ga.get(`ga:${GA_PROFILE_ID}`, startDate, endDate, GA_METRIC).rows;
+    reports.forEach(report => {
+        attachments.push({
+            title: 'Total',
+            text: `セッション:${report[0]}, UU:${report[1]}, PV: ${report[2]}`
+        });
     });
     const payload = slackMessage;
     payload.text = `${startDate} アクセスレポート`
