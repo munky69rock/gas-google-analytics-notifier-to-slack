@@ -32,16 +32,7 @@ interface IAttachment {
   text: string;
 }
 
-function sendAnalyticsData() {
-  const today = new Date();
-  const timezone = Session.getScriptTimeZone();
-  const startDate = Utilities.formatDate(
-    new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1),
-    timezone,
-    "yyyy-MM-dd"
-  );
-  const endDate = Utilities.formatDate(today, timezone, "yyyy-MM-dd");
-
+function sendAnalyticsData(startDate: string, endDate: string) {
   Logger.log(startDate, endDate);
 
   const channelReports = Analytics.Data.Ga.get(
@@ -71,10 +62,37 @@ function sendAnalyticsData() {
     });
   });
   const payload = slackMessage;
-  payload.text = `${startDate} アクセスレポート`;
+  payload.text = startDate === endDate ? `${startDate} アクセスレポート` : `${startDate}~${endDate} アクセスレポート`;
   payload.attachments = attachments;
   UrlFetchApp.fetch(SLACK_URL, {
     method: "post",
     payload: JSON.stringify(payload)
   });
+}
+
+function sendDailyAnalyticsData() {
+  const today = new Date();
+  const timezone = Session.getScriptTimeZone();
+  const startDate = Utilities.formatDate(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1),
+    timezone,
+    "yyyy-MM-dd"
+  );
+  sendAnalyticsData(startDate, startDate);
+}
+
+function sendMonthlyAnalyticsData() {
+  const today = new Date();
+  const timezone = Session.getScriptTimeZone();
+  const startDate = Utilities.formatDate(
+    new Date(today.getFullYear(), today.getMonth() - 1, 1),
+    timezone,
+    "yyyy-MM-dd"
+  );
+  const endDate = Utilities.formatDate(
+    new Date(today.getFullYear(), today.getMonth(), 0),
+    timezone,
+    "yyyy-MM-dd"
+  );
+  sendAnalyticsData(startDate, endDate);
 }
