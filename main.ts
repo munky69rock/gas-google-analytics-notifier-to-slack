@@ -8,15 +8,11 @@ const GA_OPTIONS = {
 
 declare class Analytics {
   static Data: any;
+  static Management: any;
 }
 
 const SLACK_URL = scriptProperty.getProperty("SLACK_URL");
 const SLACK_CHANNEL = scriptProperty.getProperty("SLACK_CHANNEL");
-const slackMessage: ISlackMessage = {
-  channel: SLACK_CHANNEL,
-  username: "google-analytics",
-  icon_emoji: ":chart_with_upwards_trend:"
-};
 
 interface ISlackMessage {
   text?: string;
@@ -41,9 +37,9 @@ function sendAnalyticsData(startDate: string, endDate: string) {
     endDate,
     GA_METRIC,
     GA_OPTIONS
-  ).rows;
+  );
   const attachments: IAttachment[] = [];
-  channelReports.forEach(report => {
+  channelReports.rows.forEach(report => {
     attachments.push({
       title: report[0],
       text: `セッション: ${report[1]}, UU: ${report[2]}, PV: ${report[3]}`
@@ -54,15 +50,26 @@ function sendAnalyticsData(startDate: string, endDate: string) {
     startDate,
     endDate,
     GA_METRIC
-  ).rows;
-  reports.forEach(report => {
+  );
+  reports.rows.forEach(report => {
     attachments.push({
       title: "Total",
       text: `セッション: ${report[0]}, UU: ${report[1]}, PV: ${report[2]}`
     });
   });
-  const payload = slackMessage;
-  payload.text = startDate === endDate ? `${startDate} アクセスレポート` : `${startDate}~${endDate} アクセスレポート`;
+  const profile = Analytics.Management.Webproperties.get(
+    reports.profileInfo.accountId,
+    reports.profileInfo.webPropertyId
+  );
+  const payload: ISlackMessage = {
+    channel: SLACK_CHANNEL,
+    username: profile.name,
+    icon_emoji: ":chart_with_upwards_trend:"
+  };
+  payload.text =
+    startDate === endDate
+      ? `${startDate} アクセスレポート`
+      : `${startDate}~${endDate} アクセスレポート`;
   payload.attachments = attachments;
   UrlFetchApp.fetch(SLACK_URL, {
     method: "post",
