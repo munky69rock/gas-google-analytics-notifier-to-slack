@@ -39,6 +39,10 @@ function sendAnalyticsData(startDate: string, endDate: string) {
     GA_OPTIONS
   );
   const attachments: IAttachment[] = [];
+  if (!channelReports.rows) {
+    Logger.log("Oops, no access data yesterday... 😱");
+    return;
+  }
   channelReports.rows.forEach(report => {
     attachments.push({
       title: report[0],
